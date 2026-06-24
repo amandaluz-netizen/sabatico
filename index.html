@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sabático — Sardenha · outubro 2026</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -267,44 +268,7 @@
 
   <p class="section-label">Roteiro</p>
 
-  <div style="background:var(--bg-primary);border:0.5px solid var(--border-tertiary);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
-    <svg viewBox="0 0 420 310" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;" role="img" aria-label="Mapa simplificado da Sardenha com os três destinos marcados">
-      <title>Mapa da Sardenha — Sabático outubro 2026</title>
-
-      <path d="
-        M 150,10 L 178,14 L 212,24 L 224,46 L 220,68
-        L 228,90 L 224,116 L 216,148 L 208,178
-        L 200,208 L 192,232 L 176,256 L 154,272
-        L 134,278 L 112,274 L 88,264 L 66,250
-        L 46,232 L 30,212 L 18,192 L 14,172
-        L 28,165 L 40,162 L 18,150 L 6,136
-        L 22,130 L 36,128 L 20,114 L 8,100
-        L 6,82 L 10,62 L 8,44 L 22,28
-        L 50,16 L 100,10 L 150,10 Z
-      " fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.5" stroke-linejoin="round"/>
-
-      <line x1="220" y1="68" x2="40" y2="162" stroke="#AFA9EC" stroke-width="1.2" stroke-dasharray="5,3"/>
-      <line x1="40" y1="162" x2="140" y2="270" stroke="#5DCAA5" stroke-width="1.2" stroke-dasharray="5,3"/>
-
-      <circle cx="220" cy="68" r="8" fill="#7F77DD" stroke="white" stroke-width="2"/>
-      <text x="232" y="62" font-size="11" fill="#3C3489" font-family="-apple-system,sans-serif" font-weight="500">San Teodoro</text>
-      <text x="232" y="75" font-size="10" fill="#534AB7" font-family="-apple-system,sans-serif">03–08/out</text>
-
-      <circle cx="40" cy="162" r="8" fill="#1D9E75" stroke="white" stroke-width="2"/>
-      <text x="52" y="156" font-size="11" fill="#085041" font-family="-apple-system,sans-serif" font-weight="500">Arbus / Costa Verde</text>
-      <text x="52" y="169" font-size="10" fill="#0F6E56" font-family="-apple-system,sans-serif">08–16/out</text>
-
-      <circle cx="140" cy="270" r="8" fill="#1D9E75" stroke="white" stroke-width="2"/>
-      <text x="152" y="264" font-size="11" fill="#085041" font-family="-apple-system,sans-serif" font-weight="500">Quartu Sant'Elena</text>
-      <text x="152" y="277" font-size="10" fill="#0F6E56" font-family="-apple-system,sans-serif">16–24/out</text>
-
-      <text x="10" y="22" font-size="10" fill="#B4B2A9" font-family="-apple-system,sans-serif">N ↑</text>
-    </svg>
-    <div style="display:flex;gap:16px;justify-content:center;margin-top:8px;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)"><span style="width:8px;height:8px;border-radius:50%;background:#7F77DD;display:inline-block"></span>03–08/out</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary)"><span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;display:inline-block"></span>08–16/out · 16–24/out</div>
-    </div>
-  </div>
+  <div id="map" style="height:320px;border-radius:var(--radius-lg);overflow:hidden;border:0.5px solid var(--border-tertiary);margin-bottom:1rem;"></div>
 
   <div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:var(--color-purple)"></div>Trânsito</div>
@@ -465,6 +429,37 @@
   today.setHours(0,0,0,0);
   const diff = Math.round((depart - today) / 86400000);
   document.getElementById('dias-counter').textContent = diff > 0 ? diff : 0;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+  const map = L.map('map', { zoomControl: true, scrollWheelZoom: false }).fitBounds([
+    [39.10, 8.40], [41.00, 9.90]
+  ]);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 13
+  }).addTo(map);
+
+  const stops = [
+    { coords: [40.776, 9.576], color: '#7F77DD', border: '#3C3489', label: 'San Teodoro', dates: '03–08/out' },
+    { coords: [39.530, 8.590], color: '#1D9E75', border: '#085041', label: 'Arbus / Costa Verde', dates: '08–16/out' },
+    { coords: [39.243, 9.182], color: '#1D9E75', border: '#085041', label: 'Quartu Sant\'Elena', dates: '16–24/out' }
+  ];
+
+  const latlngs = stops.map(s => s.coords);
+  L.polyline(latlngs, { color: '#9FE1CB', weight: 2, dashArray: '6 4' }).addTo(map);
+
+  stops.forEach(s => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${s.color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+    L.marker(s.coords, { icon }).addTo(map)
+      .bindPopup(`<b style="font-size:13px">${s.label}</b><br><span style="font-size:11px;color:#666">${s.dates}</span>`);
+  });
 </script>
 </body>
 </html>
